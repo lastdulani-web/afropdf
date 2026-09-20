@@ -1,0 +1,23 @@
+{
+  "appName": "AfroPDF",
+  "language": "Mutauro",
+  "theme": "Chiedza / Rima",
+  "welcome": "Titambire",
+  "tagline": "Verenga maPDF ako mahara.",
+  "open": "Vhura PDF",
+  "openAnother": "Vhura imwe",
+  "dropHint": "Kana isa faira rePDF pano.",
+  "privacy": "Faira rako rinogara pafoni yako. Hariiswe paInternet.",
+  "prev": "Dzoka shure",
+  "next": "Enda mberi",
+  "zoomIn": "Wedzera hukuru",
+  "zoomOut": "Deredza hukuru",
+  "pageOf": "/{n}",
+  "loading": "Kurodha...",
+  "error": "Hatina kukwanisa kuvhura faira iri.",
+  "notPdf": "Ndapota sarudza faira rePDF.",
+  "recent": "Dzichangobva kuvhurwa",
+  "remove": "Bvisa",
+  "page": "Peji",
+  "credit": "AfroPDF yakagadzirwa na Last Dulani"
+}
