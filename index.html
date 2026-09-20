@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="sn">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="Last Dulani">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AfroPDF</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1e7a3c">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<style>
+:root{--bg:#fbf7ef;--fg:#1f2a1f;--card:#fff;--ac:#1e7a3c;--ac2:#f2b705;--bd:#d9d2c1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a14;--fg:#eef2ea;--card:#1d261d;--ac:#4cc27a;--bd:#33402f}}
+:root[data-theme="dark"]{--bg:#141a14;--fg:#eef2ea;--card:#1d261d;--ac:#4cc27a;--bd:#33402f}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:4px solid var(--ac2);background:var(--card);flex-wrap:wrap}
+h1{font-size:.95rem;margin:0;flex:1;min-width:100px;cursor:pointer}
+.lg{flex:none;cursor:pointer}
+button,select,input{font:inherit;font-size:.8rem;color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:5px 8px;min-height:32px}
+button.p{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:600;font-size:.9rem}
+button:disabled{opacity:.4}
+#bar{display:none;gap:4px;padding:6px 8px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--bd);background:var(--card)}
+.pgbox{display:inline-flex;align-items:center;border:1px solid var(--bd);border-radius:6px;background:var(--card);padding:0 8px;min-height:32px;font-size:.8rem;cursor:text}
+.pgbox:focus-within{border-color:var(--ac)}
+#pg{border:0;background:transparent;padding:0;min-height:0;min-width:0;width:2.5ch;text-align:right;-moz-appearance:textfield;appearance:textfield;outline:0}
+#pg::-webkit-inner-spin-button,#pg::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+main{flex:1;overflow:auto;padding:12px;text-align:center;position:relative;touch-action:pan-x pan-y}
+#welcome{max-width:420px;margin:4vh auto;padding:24px;border:2px dashed var(--bd);border-radius:14px;background:var(--card)}
+#welcome.over{border-color:var(--ac)}
+#welcome h2{margin:0 0 8px}
+#welcome p{margin:0 0 16px;opacity:.85}
+#pages{position:relative;width:max-content;min-width:100%}
+.pg{margin:0 auto 10px;background:#fff;box-shadow:0 2px 10px #0003}
+.pg canvas{display:block}
+#recent{margin-top:18px;text-align:left}
+#recent h3{font-size:.85rem;margin:0 0 6px;opacity:.8}
+.row{display:flex;gap:6px;margin:6px 0}
+.row .nm{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#msg{margin:12px;opacity:.85}
+.credit{margin:18px 0 0;font-size:.75rem;opacity:.65}
+.err{color:#c0392b}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="logo" viewBox="0 0 48 48"><rect width="48" height="48" rx="11" fill="#1e7a3c"/><path d="M13 8h16l8 8v24a2 2 0 0 1-2 2H13a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z" fill="#fff"/><path d="M29 8v6a2 2 0 0 0 2 2h6z" fill="#f2b705"/><path d="M18 32l6-12.5L30 32M20.6 27.5h6.8" stroke="#1e7a3c" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="16" y="36" width="16" height="2.6" rx="1.3" fill="#f2b705"/></symbol></svg>
+<header>
+  <svg class="lg" id="lg" width="30" height="30" role="img" aria-label="AfroPDF"><use href="#logo"/></svg>
+  <h1 id="title" data-i="appName"></h1>
+  <select id="lang" aria-label="Language"></select>
+  <button id="theme" data-i="theme"></button>
+</header>
+<div id="bar">
+  <button id="prev" data-i="prev"></button>
+  <label class="pgbox"><input id="pg" type="number" min="1" aria-label="Page"><span id="tot"></span></label>
+  <button id="next" data-i="next"></button>
+  <button id="zo" data-i="zoomOut"></button>
+  <button id="zi" data-i="zoomIn"></button>
+  <button id="open2" data-i="openAnother"></button>
+</div>
+<main id="main">
+  <div id="welcome">
+    <svg width="72" height="72" role="img" aria-label="AfroPDF" style="margin-bottom:8px"><use href="#logo"/></svg>
+    <h2 data-i="welcome"></h2>
+    <p data-i="tagline"></p>
+    <button class="p" id="open" data-i="open"></button>
+    <p style="margin-top:16px;font-size:.85rem" data-i="dropHint"></p>
+    <p style="font-size:.8rem;opacity:.7" data-i="privacy"></p>
+    <div id="recent" hidden><h3 data-i="recent"></h3><div id="rows"></div></div>
+    <p class="credit" data-i="credit"></p>
+  </div>
+  <div id="msg"></div>
+  <div id="pages" hidden></div>
+</main>
+<input type="file" id="file" accept="application/pdf" hidden>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>
+/* Interface text lives in locales/<code>.json. To add a language: add the file and one line to LANGS. */
+var STR = {};
+function ensure(l){
+  if(STR[l]) return Promise.resolve();
+  return fetch("locales/"+l+".json").then(function(r){ return r.json(); }).then(function(j){ STR[l]=j; });
+}
+var LANGS = {sn:"chiShona", en:"English"};
+var lang = "sn";
+try { lang = localStorage.getItem("lang") || "sn"; } catch(e){}
+if(!LANGS[lang]) lang = "sn";
+function t(k, v){
+  var s = (STR[lang] && STR[lang][k]) || STR.en[k] || k;
+  if(v) for(var x in v) s = s.replace("{"+x+"}", v[x]);
+  return s;
+}
+var $ = function(i){return document.getElementById(i)};
+var langSel=$("lang"), tot=$("tot"), pg=$("pg"), msg=$("msg"), main=$("main"), pagesEl=$("pages"), w=$("welcome");
+var pdf=null, cur=1, scale=1, baseW=1, baseH=1, gen=0, fileKey="", obs=null, pageEls=[];
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i]").forEach(function(el){ el.textContent = t(el.dataset.i); });
+  document.title = t("appName");
+  if(pdf) tot.textContent = t("pageOf",{n:pdf.numPages});
+  try { localStorage.setItem("lang", lang); } catch(e){}
+  listRecent();
+}
+Object.keys(LANGS).forEach(function(k){
+  var o=document.createElement("option"); o.value=k; o.textContent=LANGS[k]; langSel.appendChild(o);
+});
+langSel.value = lang;
+langSel.onchange = function(){ var l=langSel.value; ensure(l).then(function(){ lang=l; applyLang(); }); };
+$("theme").onclick = function(){
+  var r=document.documentElement, dark = getComputedStyle(r).getPropertyValue("--bg").trim()==="#141a14";
+  r.setAttribute("data-theme", dark?"light":"dark");
+};
+
+/* ---- Recent files, stored on the phone (IndexedDB) ---- */
+function idb(){ return new Promise(function(res,rej){
+  var r=indexedDB.open("afropdf",1);
+  r.onupgradeneeded=function(){ r.result.createObjectStore("files",{keyPath:"key"}); };
+  r.onsuccess=function(){ res(r.result); }; r.onerror=function(){ rej(r.error); };
+});}
+function saveRecent(file){
+  idb().then(function(db){
+    var tx=db.transaction("files","readwrite"), st=tx.objectStore("files");
+    st.put({key:file.name+"|"+file.size, name:file.name, ts:Date.now(), blob:file});
+    st.getAll().onsuccess=function(e){
+      e.target.result.sort(function(a,b){return b.ts-a.ts}).slice(5).forEach(function(r){ st.delete(r.key); });
+    };
+  }).catch(function(){});
+}
+function lastPage(key){ try{ return parseInt(localStorage.getItem("pos:"+key),10)||1; }catch(e){ return 1; } }
+function listRecent(){
+  idb().then(function(db){
+    db.transaction("files").objectStore("files").getAll().onsuccess=function(e){
+      var rows=(e.target.result||[]).sort(function(a,b){return b.ts-a.ts}), box=$("rows");
+      box.innerHTML=""; $("recent").hidden=!rows.length;
+      rows.forEach(function(r){
+        var d=document.createElement("div"); d.className="row";
+        var b=document.createElement("button"); b.className="nm";
+        b.textContent=r.name+" · "+t("page")+" "+lastPage(r.key);
+        b.onclick=function(){ load(r.blob); };
+        var x=document.createElement("button"); x.textContent="✕"; x.title=t("remove"); x.setAttribute("aria-label",t("remove"));
+        x.onclick=function(){ idb().then(function(db2){ var tx=db2.transaction("files","readwrite"); tx.objectStore("files").delete(r.key); tx.oncomplete=listRecent; }); };
+        d.appendChild(b); d.appendChild(x); box.appendChild(d);
+      });
+    };
+  }).catch(function(){});
+}
+
+/* ---- Opening files ---- */
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+function pick(){ $("file").click(); }
+$("open").onclick = pick; $("open2").onclick = pick;
+$("file").onchange = function(e){ if(e.target.files[0]) load(e.target.files[0]); e.target.value=""; };
+["dragover","dragenter"].forEach(function(ev){ document.body.addEventListener(ev,function(e){e.preventDefault(); w.classList.add("over");}); });
+["dragleave","drop"].forEach(function(ev){ document.body.addEventListener(ev,function(e){e.preventDefault(); w.classList.remove("over");}); });
+document.body.addEventListener("drop", function(e){ var f=e.dataTransfer.files[0]; if(f) load(f); });
+function showWelcome(){ w.style.display=""; $("bar").style.display="none"; pagesEl.hidden=true; msg.textContent=""; listRecent(); }
+$("lg").onclick=showWelcome; $("title").onclick=showWelcome;
+
+function fail(k){ msg.className="err"; msg.textContent=t(k); }
+function load(file){
+  if(file.type!=="application/pdf" && !/\.pdf$/i.test(file.name||"")){ fail("notPdf"); return; }
+  msg.className=""; msg.textContent=t("loading");
+  var fr=new FileReader();
+  fr.onload=function(){
+    pdfjsLib.getDocument({data:new Uint8Array(fr.result)}).promise.then(function(d){
+      if(pdf){ try{pdf.destroy();}catch(e){} }
+      pdf=d; fileKey=file.name+"|"+file.size;
+      var start=lastPage(fileKey);
+      saveRecent(file);
+      return d.getPage(1).then(function(p){
+        var v=p.getViewport({scale:1}); baseW=v.width; baseH=v.height;
+        scale=Math.min(2,Math.max(.3,(main.clientWidth-24)/baseW));
+        msg.textContent=""; w.style.display="none"; $("bar").style.display="flex"; pagesEl.hidden=false;
+        pg.max=d.numPages; pg.style.width=(String(d.numPages).length+.5)+"ch"; tot.textContent=t("pageOf",{n:d.numPages});
+        layout(Math.min(start,d.numPages));
+      });
+    }).catch(function(){ fail("error"); });
+  };
+  fr.readAsArrayBuffer(file);
+}
+
+/* ---- Continuous scrolling: pages are drawn only when near the screen ---- */
+function freePage(el){
+  el._on=false;
+  if(el._rt){ try{el._rt.cancel();}catch(e){} el._rt=null; }
+  var c=el.firstChild; if(c){ c.width=c.height=0; el.removeChild(c); }
+}
+function drawPage(el){
+  if(el._on) return; el._on=true; var g=gen;
+  pdf.getPage(+el.dataset.n).then(function(p){
+    if(!el._on || g!==gen) return;
+    var dpr=Math.min(window.devicePixelRatio||1,2), vp=p.getViewport({scale:scale});
+    var c=document.createElement("canvas");
+    c.width=vp.width*dpr; c.height=vp.height*dpr;
+    c.style.width=vp.width+"px"; c.style.height=vp.height+"px";
+    el.style.width=vp.width+"px"; el.style.height=vp.height+"px";
+    el.appendChild(c);
+    el._rt=p.render({canvasContext:c.getContext("2d"),viewport:vp,transform:dpr!==1?[dpr,0,0,dpr,0,0]:null});
+    return el._rt.promise;
+  }).catch(function(){});
+}
+function layout(goto){
+  gen++;
+  pageEls.forEach(freePage);
+  if(obs) obs.disconnect();
+  pagesEl.innerHTML=""; pageEls=[];
+  obs=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting) drawPage(e.target); else freePage(e.target); });
+  },{root:main,rootMargin:"100% 0px"});
+  for(var i=1;i<=pdf.numPages;i++){
+    var el=document.createElement("div"); el.className="pg"; el.dataset.n=i;
+    el.style.width=baseW*scale+"px"; el.style.height=baseH*scale+"px";
+    pagesEl.appendChild(el); pageEls.push(el); obs.observe(el);
+  }
+  goTo(goto);
+}
+function goTo(n){
+  n=Math.max(1,Math.min(pdf.numPages,n));
+  main.scrollTop=pagesEl.offsetTop+pageEls[n-1].offsetTop-8;
+  setCur(n);
+}
+var saveT;
+function setCur(n){
+  cur=n; pg.value=n;
+  $("prev").disabled=n<=1; $("next").disabled=!pdf||n>=pdf.numPages;
+  clearTimeout(saveT);
+  saveT=setTimeout(function(){ try{localStorage.setItem("pos:"+fileKey,cur);}catch(e){} },400);
+}
+var tick=false;
+main.addEventListener("scroll",function(){
+  if(tick||!pdf||!pageEls.length) return; tick=true;
+  requestAnimationFrame(function(){
+    tick=false;
+    var pos=main.scrollTop+main.clientHeight*.25-pagesEl.offsetTop, lo=0, hi=pageEls.length-1;
+    while(lo<hi){ var m=(lo+hi+1)>>1; if(pageEls[m].offsetTop<=pos) lo=m; else hi=m-1; }
+    if(lo+1!==cur) setCur(lo+1);
+  });
+});
+$("prev").onclick=function(){ goTo(cur-1); };
+$("next").onclick=function(){ goTo(cur+1); };
+pg.onchange=function(){ goTo(parseInt(pg.value,10)||1); };
+function zoom(f){
+  if(!pdf) return;
+  var s=Math.max(.3,Math.min(4,scale*f)), n=cur;
+  if(s===scale) return; scale=s; layout(n);
+}
+$("zi").onclick=function(){ zoom(1.25); };
+$("zo").onclick=function(){ zoom(.8); };
+
+/* Pinch to zoom: preview while pinching, redraw crisply when fingers lift */
+var pinch=null;
+function dist(e){ var a=e.touches[0], b=e.touches[1]; return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY); }
+main.addEventListener("touchstart",function(e){ if(pdf && e.touches.length===2) pinch={d:dist(e),r:1}; },{passive:true});
+main.addEventListener("touchmove",function(e){
+  if(!pinch||e.touches.length!==2) return;
+  e.preventDefault();
+  pinch.r=Math.max(.3/scale,Math.min(4/scale,dist(e)/pinch.d));
+  pagesEl.style.transformOrigin="50% 0"; pagesEl.style.transform="scale("+pinch.r+")";
+},{passive:false});
+main.addEventListener("touchend",function(){
+  if(!pinch) return; var r=pinch.r; pinch=null;
+  pagesEl.style.transform="";
+  if(Math.abs(r-1)>.03) zoom(r);
+});
+document.addEventListener("keydown",function(e){
+  if(!pdf||e.target===pg) return;
+  if(e.key==="ArrowRight") goTo(cur+1);
+  if(e.key==="ArrowLeft") goTo(cur-1);
+});
+ensure("en").then(function(){ return ensure(lang); }).catch(function(){ lang="en"; }).then(applyLang);
+
+/* Real Web Worker for PDF.js (fetched from the CDN once, then served from the offline cache) */
+var WORKER="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+fetch(WORKER).then(function(r){ return r.text(); }).then(function(txt){
+  pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([txt],{type:"text/javascript"}));
+}).catch(function(){});
+
+/* Offline support */
+if("serviceWorker" in navigator){ window.addEventListener("load",function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); }); }
+</script>
+</body>
+</html>
