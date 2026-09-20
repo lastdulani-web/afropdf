@@ -1,0 +1,23 @@
+{
+  "appName": "AfroPDF",
+  "language": "Language",
+  "theme": "Light / Dark",
+  "welcome": "Welcome",
+  "tagline": "Read your PDFs for free.",
+  "open": "Open a PDF",
+  "openAnother": "Open another",
+  "dropHint": "Or drop a PDF file here.",
+  "privacy": "Your file stays on your phone. It is not uploaded.",
+  "prev": "Go back",
+  "next": "Go forward",
+  "zoomIn": "Zoom in",
+  "zoomOut": "Zoom out",
+  "pageOf": "/{n}",
+  "loading": "Loading...",
+  "error": "Could not open this file.",
+  "notPdf": "Please choose a PDF file.",
+  "recent": "Recently opened",
+  "remove": "Remove",
+  "page": "Page",
+  "credit": "AfroPDF developed by Last Dulani"
+}
