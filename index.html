@@ -34,8 +34,11 @@ main{flex:1;overflow:auto;padding:12px;text-align:center;position:relative;touch
 #welcome h2{margin:0 0 8px}
 #welcome p{margin:0 0 16px;opacity:.85}
 #pages{position:relative;width:max-content;min-width:100%}
-.pg{margin:0 auto 10px;background:#fff;box-shadow:0 2px 10px #0003}
+.pg{position:relative;margin:0 auto 10px;background:#fff;box-shadow:0 2px 10px #0003}
 .pg canvas{display:block}
+.textLayer{position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;line-height:1;-webkit-user-select:text;user-select:text}
+.textLayer span,.textLayer br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%}
+.textLayer ::selection{background:rgba(30,122,60,.35);color:transparent}
 #recent{margin-top:18px;text-align:left}
 #recent h3{font-size:.85rem;margin:0 0 6px;opacity:.8}
 .row{display:flex;gap:6px;margin:6px 0}
@@ -188,7 +191,9 @@ function load(file){
 function freePage(el){
   el._on=false;
   if(el._rt){ try{el._rt.cancel();}catch(e){} el._rt=null; }
-  var c=el.firstChild; if(c){ c.width=c.height=0; el.removeChild(c); }
+  if(el._tl){ try{el._tl.cancel();}catch(e){} el._tl=null; }
+  var c=el.querySelector("canvas"); if(c){ c.width=c.height=0; }
+  el.innerHTML="";
 }
 function drawPage(el){
   if(el._on) return; el._on=true; var g=gen;
@@ -201,6 +206,11 @@ function drawPage(el){
     el.style.width=vp.width+"px"; el.style.height=vp.height+"px";
     el.appendChild(c);
     el._rt=p.render({canvasContext:c.getContext("2d"),viewport:vp,transform:dpr!==1?[dpr,0,0,dpr,0,0]:null});
+    var tl=document.createElement("div"); tl.className="textLayer"; el.appendChild(tl);
+    p.getTextContent().then(function(tc){
+      if(!el._on || g!==gen) return;
+      el._tl=pdfjsLib.renderTextLayer({textContent:tc,container:tl,viewport:vp,textDivs:[]});
+    }).catch(function(){});
     return el._rt.promise;
   }).catch(function(){});
 }
