@@ -19,5 +19,12 @@
   "recent": "Dzichangobva kuvhurwa",
   "remove": "Bvisa",
   "page": "Peji",
-  "credit": "AfroPDF yakagadzirwa na Last Dulani"
+  "credit": "AfroPDF yakagadzirwa na Last Dulani",
+  "print": "Printa",
+  "printFrom": "Kubva papeji",
+  "printTo": "Kusvika papeji",
+  "printMax": "Kusvika mapeji {n} panguva imwe.",
+  "cancel": "Regedza",
+  "preparing": "Kugadzirira...",
+  "printFail": "Hatina kukwanisa kuprinta."
 }

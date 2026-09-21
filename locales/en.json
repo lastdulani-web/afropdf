@@ -19,5 +19,12 @@
   "recent": "Recently opened",
   "remove": "Remove",
   "page": "Page",
-  "credit": "AfroPDF developed by Last Dulani"
+  "credit": "AfroPDF developed by Last Dulani",
+  "print": "Print",
+  "printFrom": "From page",
+  "printTo": "To page",
+  "printMax": "Up to {n} pages at a time.",
+  "cancel": "Cancel",
+  "preparing": "Preparing...",
+  "printFail": "Could not print."
 }
