@@ -1,6 +1,6 @@
 /* AfroPDF service worker: makes the app open with no internet after the first visit.
    When you change any file, bump VERSION so phones fetch the new copy. */
-var VERSION = "afropdf-v5";
+var VERSION = "afropdf-v6";
 var APP = ["./", "index.html", "manifest.webmanifest", "locales/en.json", "locales/sn.json",
            "icons/icon-192.png", "icons/icon-512.png", "icons/icon-180.png"];
 var LIBS = ["https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js",

@@ -45,6 +45,23 @@ main{flex:1;overflow:auto;padding:12px;text-align:center;position:relative;touch
 .row .nm{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #msg{margin:12px;opacity:.85}
 .credit{margin:18px 0 0;font-size:.75rem;opacity:.65}
+#printArea{display:none}
+#pdlg{display:none;position:fixed;inset:0;background:#0007;align-items:center;justify-content:center;z-index:20;padding:16px}
+#pdlg.on{display:flex}
+#pbox{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;width:100%;max-width:320px}
+#pbox h3{margin:0 0 10px;font-size:1rem}
+#pbox label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0;font-size:.85rem}
+#pbox input{width:80px;text-align:center}
+#pmsg{font-size:.8rem;opacity:.85;margin:8px 0 12px;min-height:1.2em}
+#pmsg.err{opacity:1}
+.pbtns{display:flex;gap:8px;justify-content:flex-end}
+@page{margin:8mm}
+@media print{
+ body>*:not(#printArea){display:none!important}
+ html,body{height:auto;background:#fff;display:block}
+ #printArea{display:block}
+ #printArea img{display:block;margin:0 auto;max-width:100%;max-height:270mm;break-after:page;page-break-after:always}
+}
 .err{color:#c0392b}
 </style>
 </head>
@@ -63,6 +80,7 @@ main{flex:1;overflow:auto;padding:12px;text-align:center;position:relative;touch
   <button id="next" data-i="next"></button>
   <button id="zo" data-i="zoomOut"></button>
   <button id="zi" data-i="zoomIn"></button>
+  <button id="print" aria-label="Print" title="Print"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="display:block" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V3h10v6"/><path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><rect x="7" y="14" width="10" height="7" rx="1"/></svg></button>
 </div>
 <main id="main">
   <div id="welcome">
@@ -78,6 +96,14 @@ main{flex:1;overflow:auto;padding:12px;text-align:center;position:relative;touch
   <div id="msg"></div>
   <div id="pages" hidden></div>
 </main>
+<div id="printArea"></div>
+<div id="pdlg"><div id="pbox" role="dialog" aria-modal="true">
+  <h3 data-i="print"></h3>
+  <label><span data-i="printFrom"></span><input id="pf" type="number" min="1"></label>
+  <label><span data-i="printTo"></span><input id="pt" type="number" min="1"></label>
+  <div id="pmsg"></div>
+  <div class="pbtns"><button id="pcancel" data-i="cancel"></button><button class="p" id="pgo" data-i="print"></button></div>
+</div></div>
 <input type="file" id="file" accept="application/pdf" hidden>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -107,6 +133,7 @@ function applyLang(){
   document.title = t("appName");
   $("theme").setAttribute("aria-label",t("theme")); $("theme").title=t("theme");
   $("open2").setAttribute("aria-label",t("openAnother")); $("open2").title=t("openAnother");
+  $("print").setAttribute("aria-label",t("print")); $("print").title=t("print");
   if(pdf) tot.textContent = t("pageOf",{n:pdf.numPages});
   try { localStorage.setItem("lang", lang); } catch(e){}
   listRecent();
@@ -174,7 +201,7 @@ function load(file){
   fr.onload=function(){
     pdfjsLib.getDocument({data:new Uint8Array(fr.result)}).promise.then(function(d){
       if(pdf){ try{pdf.destroy();}catch(e){} }
-      pdf=d; fileKey=file.name+"|"+file.size;
+      clearPrint(); pdf=d; fileKey=file.name+"|"+file.size;
       var start=lastPage(fileKey);
       saveRecent(file);
       return d.getPage(1).then(function(p){
@@ -279,6 +306,46 @@ main.addEventListener("touchend",function(){
   pagesEl.style.transform="";
   if(Math.abs(r-1)>.03) zoom(r);
 });
+/* ---- Print (up to 50 pages): pages are drawn sharply in the background, then the print dialog opens ---- */
+var pjob=0, pUrls=[], PMAX=50;
+function clearPrint(){ pUrls.forEach(function(u){ URL.revokeObjectURL(u); }); pUrls=[]; $("printArea").innerHTML=""; }
+function pBusy(b){ $("pf").disabled=$("pt").disabled=$("pgo").disabled=b; }
+function openPrint(){
+  if(!pdf) return; pjob++; clearPrint();
+  $("pf").max=$("pt").max=pdf.numPages; $("pf").value=cur; $("pt").value=cur;
+  $("pmsg").className=""; $("pmsg").textContent=t("printMax",{n:PMAX});
+  pBusy(false); $("pdlg").classList.add("on");
+}
+function closePrint(){ pjob++; $("pdlg").classList.remove("on"); }
+function doPrint(){
+  var n=pdf.numPages, a=Math.max(1,parseInt($("pf").value,10)||1), b=Math.min(n,parseInt($("pt").value,10)||a);
+  $("pf").value=a; $("pt").value=b;
+  if(b<a || b-a+1>PMAX){ $("pmsg").className="err"; $("pmsg").textContent=t("printMax",{n:PMAX}); return; }
+  var job=++pjob, i=a, area=$("printArea"); clearPrint(); pBusy(true);
+  function next(){
+    if(job!==pjob) return;
+    if(i>b){ closePrint(); setTimeout(function(){ window.print(); },150); return; }
+    $("pmsg").className=""; $("pmsg").textContent=t("preparing")+" "+(i-a+1)+"/"+(b-a+1);
+    pdf.getPage(i).then(function(p){
+      var v1=p.getViewport({scale:1}), s=Math.min(2,2200/Math.max(v1.width,v1.height)), vp=p.getViewport({scale:s});
+      var c=document.createElement("canvas"); c.width=vp.width; c.height=vp.height;
+      var ctx=c.getContext("2d"); ctx.fillStyle="#fff"; ctx.fillRect(0,0,c.width,c.height);
+      return p.render({canvasContext:ctx,viewport:vp}).promise.then(function(){
+        return new Promise(function(res){ c.toBlob(res,"image/jpeg",.85); });
+      }).then(function(bl){
+        c.width=c.height=0;
+        if(job!==pjob) return;
+        var url=URL.createObjectURL(bl); pUrls.push(url);
+        return new Promise(function(res){ var im=new Image(); im.onload=im.onerror=res; im.src=url; area.appendChild(im); });
+      });
+    }).then(function(){ i++; next(); }).catch(function(){
+      if(job!==pjob) return; pBusy(false); $("pmsg").className="err"; $("pmsg").textContent=t("printFail");
+    });
+  }
+  next();
+}
+$("print").onclick=openPrint; $("pcancel").onclick=closePrint; $("pgo").onclick=doPrint;
+$("pdlg").addEventListener("click",function(e){ if(e.target===this) closePrint(); });
 document.addEventListener("keydown",function(e){
   if(!pdf||e.target===pg) return;
   if(e.key==="ArrowRight") goTo(cur+1);
