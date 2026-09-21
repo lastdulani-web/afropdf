@@ -54,7 +54,7 @@ main{flex:1;overflow:auto;padding:12px;text-align:center;position:relative;touch
   <svg class="lg" id="lg" width="30" height="30" role="img" aria-label="AfroPDF"><use href="#logo"/></svg>
   <h1 id="title" data-i="appName"></h1>
   <select id="lang" aria-label="Language"></select>
-  <button id="theme" data-i="theme"></button>
+  <button id="theme" aria-label="Light / Dark" title="Light / Dark"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style="display:block"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
 </header>
 <div id="bar">
   <button id="prev" data-i="prev"></button>
@@ -105,6 +105,7 @@ function applyLang(){
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-i]").forEach(function(el){ el.textContent = t(el.dataset.i); });
   document.title = t("appName");
+  $("theme").setAttribute("aria-label",t("theme")); $("theme").title=t("theme");
   if(pdf) tot.textContent = t("pageOf",{n:pdf.numPages});
   try { localStorage.setItem("lang", lang); } catch(e){}
   listRecent();
